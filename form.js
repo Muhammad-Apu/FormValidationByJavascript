@@ -4,16 +4,16 @@ const passwordField=document.getElementById("passwordField")
 const confirmPasswordField=document.getElementById("confirmPasswordField")
 const countryField=document.getElementById("countryField")
 const aboutField=document.getElementById("aboutField")
-const genderFieldList=document.getElementById("formId").gender;
-const courseFieldList=document.getElementById("formId").course;
+const genderBtnList=document.getElementById("formId").gender;
+const courseBtnList=document.getElementById("formId").course;
 
 // Error Messeges
 const userErrMsg="**Plz Enter Your UserName"
-const userAltErrMsg="**InValid UserName"
+const userAltErrMsg="**InValid UserName, Start with Uppercase Letter(must) and Length[3-20]"
 const emailErrMsg="**Plz Enter Your Email Address"
-const emailAltErrMsg="**InValid Email Address"
+const emailAltErrMsg="**InValid Email Address, See Details..."
 const passwordErrMsg="**Plz Enter Your Password"
-const passwordAltErrMsg="**Password Is Not Strong"
+const passwordAltErrMsg="**Password Is Not Strong, See Details..."
 const conPasswordErrMsg="**Plz Enter Your Confirm Password"
 const aboutErrMsg="**Plz Describe Yourself"
 const aboutAltErrMsg="Not Enough, Atleast 30 Words"
@@ -21,104 +21,223 @@ const aboutAltErrMsg="Not Enough, Atleast 30 Words"
 // Form Submit Event
 document.getElementById("subBtn").onclick=(event)=>{
     // Returning The Result Of Validation
+    // event.preventDefault()
     return validate();
 }
 
-function setErrMsgOfDataList(field,errMsg,flag){
-    const errEle=field.parentElement.querySelector("h6")
-    errEle.innerText=errMsg;
-    countryField.oninput=function(){
-        isCountryValidate=true;
-        setSuccessMsgOfDataList(field,"")
-    }
-}
-
-function setSuccessMsgOfDataList(field,msg){
-    const errEle=field.parentElement.querySelector("h6")
-    errEle.innerText=msg;
-}
 
 
-function setErrMsgofInputField(field,errMsg,altErrMsg,altFlag,flag,regexPattern){
+let isNameValidate=false,isEmailValidate=false,isPasswordValidate=false,isConfirmPasswordValidate=false,isGenderValidate=false,isCourseValidate=false,isCountryValidate=false,isAboutValidate=false,isPasswordsMatching=false;
+
+
+// Setting Error Message of Input Field
+function setErrMsgofInputField(field,errMsg,altErrMsg,altFlag,regexPattern,flag){
     const msgEle=field.parentElement.querySelector("h6")
+    field.classList.add("border-danger")
+    field.classList.remove("border-success")
+    field.parentElement.querySelector(".fa-circle-exclamation").classList.add("error")
+    field.parentElement.querySelector(".fa-square-check").classList.remove("success")
+    
     if(altFlag){
         msgEle.innerText=altErrMsg;
     }else{
         msgEle.innerText=errMsg;
     }
-    
-    
-    if(!flag){
-        field.oninput=function(){
-            // console.log(field.value.trim())
-            // console.log(regexPattern)
-            if(regexPattern.test(field.value.trim())){
-                flag=true;
+
+    // EventListner to observe user response on InputField
+    field.oninput=function(){
+        flag=checkInputFieldValidation(field,errMsg,altErrMsg,regexPattern,flag)
+    }
+       
+}
+
+// Setting Success Message of Input Field 
+function setSuccessMsgofInputField(field,msg,errMsg,altErrMsg,regexPattern,flag){
+    const parent=field.parentElement
+    field.classList.remove("border-danger")
+    field.classList.add("border-success")
+    parent.querySelector(".fa-circle-exclamation").classList.remove("error")
+    parent.querySelector(".fa-square-check").classList.add("success")
+    let msgEle=parent.querySelector("h6")
+    msgEle.innerText=msg
+
+    // EventListner to observe user response on InputField
+    field.oninput=function(){
+        flag=checkInputFieldValidation(field,errMsg,altErrMsg,regexPattern,flag)
+    }
+}
+
+// Checking InputField Validation
+function checkInputFieldValidation(field,ErrMsg,AltErrMsg,RegexPattern,flag){
+    if(field.value===""){
+        // console.log("no1")        
+        setErrMsgofInputField(field,ErrMsg,AltErrMsg,false,RegexPattern,flag)
+        return false;
+    }
+    else if(RegexPattern.test(field.value)){
+        // console.log("yes")
                 
-                setSuccessMsgofInputField(field,"")
-            }else{
-                
-                setErrMsgofInputField(field,errMsg,altErrMsg,true,flag,regexPattern)
+        setSuccessMsgofInputField(field,"",ErrMsg,AltErrMsg,RegexPattern,flag)    
+        return true;
+    }else{
+        
+        setErrMsgofInputField(field,ErrMsg,AltErrMsg,true,RegexPattern,flag)
+        return false;
+    }
+}
+
+// Setting Error message of Radio or Checkbox Button
+function setErrMsgOfRadioOrCheckboxBtn(radioOrCheckBoxBtns,errMsg,flag){
+    const parent=radioOrCheckBoxBtns[0].parentElement
+    for(let radioOrCheckedButton of radioOrCheckBoxBtns){
+        radioOrCheckedButton.classList.add("border-danger")
+    }
+    let msgEle=parent.nextElementSibling
+    msgEle.innerText=errMsg   
+
+    //Add Event Lisener to Observe User Response on it
+    
+        for(let radioOrCheckBoxBtn of radioOrCheckBoxBtns){
+            radioOrCheckBoxBtn.onchange=function(){
+                flag=checkingRadioOrCheckboxBtnValidation(radioOrCheckBoxBtns,errMsg,flag)
+            }
+        }
+    
+}
+
+// Setting Success message of Radio or Checkbox Button
+function setSuccessMsgOfRadioOrCheckboxBtn(radioOrCheckBoxBtns,msg,errMsg,flag){
+    const parent=radioOrCheckBoxBtns[0].parentElement
+    for(let radioOrCheckBoxBtn of radioOrCheckBoxBtns){
+        radioOrCheckBoxBtn.classList.remove("border-danger")
+        radioOrCheckBoxBtn.classList.add("border-success")
+    }
+    let msgEle=parent.nextElementSibling
+    msgEle.innerText=msg
+
+    // If It Is CheckBox then Add Event Lisener to Observe User Response on it
+    if(radioOrCheckBoxBtns[0].type==="checkbox"){
+        for(let radioOrCheckBoxBtn of radioOrCheckBoxBtns){
+            radioOrCheckBoxBtn.onchange=function(){
+                flag=checkingRadioOrCheckboxBtnValidation(radioOrCheckBoxBtns,errMsg,flag)
             }
         }
     }   
 }
 
-function setSuccessMsgofInputField(field,msg){
-    const parent=field.parentElement
-    let msgEle=parent.querySelector("h6")
-    msgEle.innerText=msg
+// Checking Radio or CheckBox Buttons validation
+function checkingRadioOrCheckboxBtnValidation(radioOrCheckBoxBtns,errMsg,flag){
+    let isChecked=false;
+    for(let radioOrCheckBoxBtn of radioOrCheckBoxBtns){
+        if(radioOrCheckBoxBtn.checked){
+           isChecked=true;
+            break;                      
+        }
+    }
+     
+    if(isChecked){
+        setSuccessMsgOfRadioOrCheckboxBtn(radioOrCheckBoxBtns,"",errMsg,flag);
+        return true;      
+    }else{
+        setErrMsgOfRadioOrCheckboxBtn(radioOrCheckBoxBtns,errMsg,flag)
+        return false;
+    }   
 }
 
+// Setting Error Message of DataList
+function setErrMsgOfDataList(dataListInputField,errMsg,flag){
+    const errEle=dataListInputField.parentElement.querySelector("h6")
+    dataListInputField.classList.add("border-danger")
+    dataListInputField.parentElement.querySelector(".fa-circle-exclamation").classList.add("error")
+    dataListInputField.parentElement.querySelector(".fa-square-check").classList.remove("success")
+    errEle.innerText=errMsg;
 
-function setRadioCheckedSuccessMsg(radioORCheckedButtons,msg){
-    const parent=radioORCheckedButtons[0].parentElement
-    let msgEle=parent.nextElementSibling
-    msgEle.innerText=msg
+    // Add Event Listener to Ovserve User Response on Datalist Input Field
+    dataListInputField.oninput=function(){
+        flga=checkingDataListValidation(dataListInputField,errMsg,flag)
+    }
     
 }
 
-function setRadioCheckedErrMsg(radioORCheckedButtons,msg,flag){
-    const parent=radioORCheckedButtons[0].parentElement
-    let msgEle=parent.nextElementSibling
-    msgEle.innerText=msg   
+// Setting Success of DataList
+function setSuccessMsgOfDataList(dataListInputField,msg,errMsg,flag){
+    dataListInputField.classList.remove("border-danger")
+    dataListInputField.classList.add("border-success")
+    dataListInputField.parentElement.querySelector(".fa-circle-exclamation").classList.remove("error")
+    dataListInputField.parentElement.querySelector(".fa-square-check").classList.add("success")
+    const errEle=dataListInputField.parentElement.querySelector("h6")
+    errEle.innerText=msg;
 
-    function validateRadioORCheckedButtons(){
-        // console.log("yes called")
-        flag=true;
-        setRadioCheckedSuccessMsg(radioORCheckedButtons,"")
-    }
-
-    for(let radioOrCheckedButton of radioORCheckedButtons){
-        radioOrCheckedButton.addEventListener("change",validateRadioORCheckedButtons)
+    // Add Event Listener to Ovserve User Response on Datalist Input Field
+    dataListInputField.oninput=function(){
+        flga=checkingDataListValidation(dataListInputField,errMsg,flag)
     }
 }
 
-function setErrMsgOfTextArea(textArea,errMsg,altErrMsg,altFlag,flag,size){
+// Checkng DataList validation
+function checkingDataListValidation(dataListInputField,errMsg,flag){
+     if(dataListInputField.value.trim()===""){
+        setErrMsgOfDataList(dataListInputField,errMsg,flag)
+        return false;
+    }else{
+        setSuccessMsgOfDataList(dataListInputField,"",errMsg,flag)
+        return true
+    }
+}
+
+// Setting Error Message of TextArea
+function setErrMsgOfTextArea(textArea,errMsg,altErrMsg,altFlag,size,flag){
     const errEle=textArea.parentElement.querySelector("h6")
+    textArea.classList.add("border-danger")
+    textArea.classList.remove("border-success")
+    textArea.parentElement.querySelector(".fa-circle-exclamation").classList.add("error")
+    textArea.parentElement.querySelector(".fa-square-check").classList.remove("success")
+    
     if(altFlag){
         errEle.innerText=altErrMsg;
     }else{
         errEle.innerText=errMsg;
     }
     
+    // Adding Event Listner to Observe User Response on TextArea
     textArea.oninput=function(){
-        if(textArea.value.trim().split(/\s+/).length>=size){
-            flag=true;
-            setSuccessMsgOfTextArea(textArea,"")
-        }else{
-            setErrMsgOfTextArea(textArea,errMsg,altErrMsg,true,flag,size)
-        }
+        flag=checkingTextAreaValidation(textArea,errMsg,altErrMsg,size,flag)
     }
 }
 
-function setSuccessMsgOfTextArea(textArea,msg){
+// Setting Success Message Of TextArea
+function setSuccessMsgOfTextArea(textArea,msg,errMsg,altErrMsg,size,flag){
     const errEle=textArea.parentElement.querySelector("h6")
+    textArea.classList.remove("border-danger")
+    textArea.classList.add("border-success")
+    textArea.parentElement.querySelector(".fa-circle-exclamation").classList.remove("error")
+    textArea.parentElement.querySelector(".fa-square-check").classList.add("success")
     errEle.innerText=msg;
+
+    // Adding Event Listner to Observe User Response on TextArea
+    textArea.oninput=function(){
+        flag=checkingTextAreaValidation(textArea,errMsg,altErrMsg,size,flag)
+    }
+
+}
+
+// Checkng TextArea validation
+function checkingTextAreaValidation(textArea,errMsg,altErrMsg,size,flag){
+    if(textArea.value.trim()===""){       
+        setErrMsgOfTextArea(textArea,errMsg,altErrMsg,false,size,flag)
+        return false;
+    }else if(textArea.value.trim().split(/\s+/).length>=size){
+             
+        setSuccessMsgOfTextArea(textArea,"",errMsg,altErrMsg,size,flag)
+        return true;
+    }else{
+        setErrMsgOfTextArea(textArea,errMsg,altErrMsg,true,size,flag)
+        return false;
+    }
 }
 
 
-let isNameValidate=false,isEmailValidate=false,isPasswordValidate=false,isConfirmPasswordValidate=false,isGenderValidate=false,isCourseValidate=false,isCountryValidate=false,isAboutValidate=false;
+
 
 function validate(){
     const usernameRegexPattern=/^[A-Z][\w -]{2,19}$/;
@@ -127,153 +246,97 @@ function validate(){
 
 
     // User Name Validation
-    if(userNameField.value===""){
-
-        // console.log("no1")
-        setErrMsgofInputField(userNameField,userErrMsg,userAltErrMsg,false,isNameValidate,usernameRegexPattern)
-        
-    }
-    else if(usernameRegexPattern.test(userNameField.value)){
-        // console.log("yes")
-        isNameValidate=true;
-        
-        setSuccessMsgofInputField(userNameField,"")    
-        
-    }else{
-        
-        setErrMsgofInputField(userNameField,userErrMsg,userAltErrMsg,true,isNameValidate,usernameRegexPattern)
-        
-    }
-
-    // Email validation
-
-    if(emailField.value===""){
-        // console.log("no1")
-
-        setErrMsgofInputField(emailField,emailErrMsg,emailAltErrMsg,false,isEmailValidate,emailRegexPattern)
-        
-    }
-    else if(emailRegexPattern.test(emailField.value)){
-        // console.log("yes")
-        isEmailValidate=true;
-        
-        setSuccessMsgofInputField(emailField,"")    
-        
-    }else{
-        // console.log("no2")
-        setErrMsgofInputField(emailField,emailErrMsg,emailAltErrMsg,true,isEmailValidate,emailRegexPattern)
-        
-    }
-
-    // Password validation
-    if(passwordField.value===""){
-        // console.log("no1")
-        setErrMsgofInputField(passwordField,passwordErrMsg,passwordAltErrMsg,false,isPasswordValidate,passwordRegexPattern)
-        
-    }
-    else if(passwordRegexPattern.test(passwordField.value.trim())){
-        // console.log("yes")
-        isPasswordValidate=true;
-        
-        setSuccessMsgofInputField(passwordField,"")    
-        
-    }else{
-        // console.log("no2")
-        setErrMsgofInputField(passwordField,passwordErrMsg,passwordAltErrMsg,true,isPasswordValidate,passwordRegexPattern)
+    isNameValidate=checkInputFieldValidation(userNameField,userErrMsg,userAltErrMsg,usernameRegexPattern,isNameValidate)
     
-    }
+    // Email Validation
+    isEmailValidate=checkInputFieldValidation(emailField,emailErrMsg,emailAltErrMsg,emailRegexPattern,isEmailValidate)
 
-    // Confirm Password validation
-    if(confirmPasswordField.value===""){
-        // console.log("no1")
-        setErrMsgofInputField(confirmPasswordField,conPasswordErrMsg,passwordAltErrMsg,false,isConfirmPasswordValidate,passwordRegexPattern)
-        
-    }
-    else if(passwordRegexPattern.test(confirmPasswordField.value)){
-        // console.log("yes")
-        isConfirmPasswordValidate=true;
-        
-        setSuccessMsgofInputField(confirmPasswordField,"")    
-        
-    }else{
-        // console.log("no2")
-        setErrMsgofInputField(confirmPasswordField,conPasswordErrMsg,passwordAltErrMsg,true,isConfirmPasswordValidate,passwordRegexPattern)
+    // Password Validation
+    isPasswordValidate=checkInputFieldValidation(passwordField,passwordErrMsg,passwordAltErrMsg,passwordRegexPattern,isPasswordValidate)
+
+    // Confirm Password Validation
+    isConfirmPasswordValidate=checkInputFieldValidation(confirmPasswordField,conPasswordErrMsg,passwordAltErrMsg,passwordRegexPattern,isConfirmPasswordValidate)
     
-    }
+
 
     // Gender Validation
-    for(let gender of genderFieldList){
-        // console.log(gender.checked)
-        if(gender.checked){
-            isGenderValidate=true;
-            break;            
-        }
-    }
-    if(isGenderValidate){
-        setRadioCheckedSuccessMsg(genderFieldList,"")
-    }else{
-        setRadioCheckedErrMsg(genderFieldList,"**Plz Choose Your Gender",isGenderValidate)
-    }
+    isGenderValidate=checkingRadioOrCheckboxBtnValidation(genderBtnList,"**Plz Choose Your Gender",isGenderValidate)
 
-    // Course Validation
+    // // Course Validation
+    isCourseValidate=checkingRadioOrCheckboxBtnValidation(courseBtnList,"**Plz Choose Your Course",isCourseValidate)
 
-    for(let course of courseFieldList){
-        // console.log(course.checked)
-        if(course.checked){
-            isCourseValidate=true;
-            break;            
-        }
-    }
 
-    if(isCourseValidate){
-        setRadioCheckedSuccessMsg(courseFieldList,"")
-    }else{
-        setRadioCheckedErrMsg(courseFieldList,"**Plz Choose Your Course",isCourseValidate)
-    }
+    // // Country Validation
+    isCountryValidate=checkingDataListValidation(countryField,"**Plz Choose Your Country",isCountryValidate)
 
-    // Country Validation
+   
 
-    if(countryField.value.trim()===""){
-        setErrMsgOfDataList(countryField,"**Plz choose Your Country",isCountryValidate)
-        
-    }else{
-        isCountryValidate=true;
-        setSuccessMsgOfDataList(countryField,"")
-    }
-
-    // About Validation
+    // // About Validation
     const aboutSize=30
-    if(aboutField.value.trim()===""){
-        
-        setErrMsgOfTextArea(aboutField,aboutErrMsg,aboutAltErrMsg,false,isAboutValidate,aboutSize)
-    }else if(aboutField.value.trim().split(/\s+/).length>=aboutSize){
-        isAboutValidate=true;
-        setSuccessMsgOfTextArea(aboutField,"")
-    }else{
-        setErrMsgOfTextArea(aboutField,aboutErrMsg,aboutAltErrMsg,true,isAboutValidate,aboutSize)
+    isAboutValidate=checkingTextAreaValidation(aboutField,aboutErrMsg,aboutAltErrMsg,aboutSize,isAboutValidate)
+    
+
+    // Paswords Matching
+    if(isPasswordValidate && isConfirmPasswordValidate){
+        if(passwordField.value===confirmPasswordField.value){           
+            isPasswordsMatching= true;           
+        }else{
+            confirmPasswordField.classList.add("border-danger")
+            confirmPasswordField.classList.remove("border-success")
+            confirmPasswordField.parentElement.querySelector(".fa-circle-exclamation").classList.add("error")
+            confirmPasswordField.parentElement.querySelector(".fa-square-check").classList.remove("success")
+            document.getElementById("confirmErrMsg").innerText="**Passwords Are Not Matching";
+
+            // EventListner to observe user response on InputField
+            confirmPasswordField.oninput=function(){
+                isConfirmPasswordValidate=checkInputFieldValidation(confirmPasswordField,conPasswordErrMsg,passwordAltErrMsg,passwordRegexPattern,isConfirmPasswordValidate)
+            }
+
+            
+        }
     }
 
+    console.log("Name: "+isNameValidate)
+    console.log("Email: "+isEmailValidate)
+    console.log("Password: "+isPasswordValidate)
+    console.log("ConPasseord: "+isConfirmPasswordValidate)
+    console.log("Gender: "+isGenderValidate)
+    console.log("Course: "+isCourseValidate)
+    console.log("Country :"+isCountryValidate)
+    console.log("About: "+isAboutValidate)
+    console.log("passwordsMatching "+isPasswordsMatching)
+    
+    
+    
 
-    // console.log(isNameValidate)
-    // console.log(isEmailValidate)
-    // console.log(isPasswordValidate)
-    // console.log(isConfirmPasswordValidate)
-    // console.log(isGenderValidate)
-    // console.log(isCourseValidate)
-    // console.log(isCountryValidate)
-    // console.log(isAboutValidate)
 
-    if(isNameValidate,isEmailValidate,isPasswordValidate,isConfirmPasswordValidate,isGenderValidate,isCourseValidate,isCountryValidate,isAboutValidate){
-        if(passwordField.value===confirmPasswordField.value){
-            return true;
-        }else{
-            document.getElementById("confirmErrMsg").innerText="**Passwords Are Not Matching"
-            return false;
-        }
+    
+    console.log("last Check")
+    console.log(isNameValidate && isNameValidate && isPasswordValidate && isConfirmPasswordValidate && isGenderValidate && isCourseValidate && isCountryValidate && isAboutValidate && isPasswordsMatching)
+
+    if(isNameValidate && isNameValidate && isPasswordValidate && isConfirmPasswordValidate && isGenderValidate && isCourseValidate && isCountryValidate && isAboutValidate && isPasswordsMatching){
+        
+        return true; 
+
     }else{
         return false;
     }
    
+}
+
+
+// Password Toggle
+
+const toogleCheckbox=document.getElementById("toggleCheckbox")
+
+toogleCheckbox.onchange=function(){
+    if(toogleCheckbox.checked){
+        passwordField.type="text";
+        confirmPasswordField.type="text"
+    }else{
+        passwordField.type="password";
+        confirmPasswordField.type="password"
+    }
 }
 
 
